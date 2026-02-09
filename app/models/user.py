@@ -17,6 +17,19 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default = db.func.now(), nullable = False) # This will automatically set the timestamp when the record is created
     updated_at = db.Column(db.DateTime, default = db.func.now(), onupdate = db.func.now(), nullable = False) # This will automatically update the timestamp whenever the record is updated
 
+    applications = db.relationship(
+        'Application', 
+        backref = 'candidate', 
+        lazy = 'dynamic'
+        )
+
+    jobs = db.relationship(
+        'Job', 
+        backref = 'recruiter', 
+        lazy = 'dynamic'
+        )
+    
+
     @property
     def password(self):
         raise AttributeError('Password is not a readable attribute.')

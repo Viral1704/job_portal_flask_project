@@ -8,7 +8,7 @@ class Job(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(255), nullable = False, index = True)
     description = db.Column(db.Text, nullable = False)
-    comapny = db.Column(db.String(100), nullable = False, index = True)
+    company = db.Column(db.String(100), nullable = False, index = True)
     location = db.Column(db.String(50), nullable = True, index = True)
     salary_min = db.Column(db.Integer, nullable = True)
     salary_max = db.Column(db.Integer, nullable = True)

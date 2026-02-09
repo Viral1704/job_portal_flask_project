@@ -16,6 +16,11 @@ def create_app():
 
     jwt.init_app(app)
 
+
+    from app.models.user import User
+    from app.models.job import Job
+    from app.models.application import Application
+
     return app
 
 

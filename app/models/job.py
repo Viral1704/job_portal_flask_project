@@ -15,6 +15,13 @@ class Job(db.Model):
     experience_level = db.Column(db.String(50), nullable = False, default = 'junior', index = True)
     job_type = db.Column(db.String(50), nullable = False, default = 'full-time', index = True)
     status = db.Column(db.String(50), nullable = False, default = 'open', index = True)
-    recruiter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
+    recruiter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False, index = True)
     created_at = db.Column(db.DateTime, default = db.func.now(), nullable = False) # This will automatically set the timestamp when the record is created
     updated_at = db.Column(db.DateTime, default = db.func.now(), onupdate = db.func.now(), nullable = False) # This will automatically update the timestamp whenever the record is updated
+
+
+    applications = db.relationship(
+        'Application', 
+        backref = 'job', 
+        lazy = 'dynamic'
+        )

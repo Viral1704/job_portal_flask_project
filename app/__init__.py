@@ -4,6 +4,8 @@ from .extensions import db, jwt, migrate
 
 from .config import Config
 
+from app.routes.auth import auth_bp
+
 def create_app():
 
     app = Flask(__name__)
@@ -16,6 +18,7 @@ def create_app():
 
     jwt.init_app(app)
 
+    app.register_blueprint(auth_bp, url_prefix = '/auth')
 
     from app.models.user import User
     from app.models.job import Job

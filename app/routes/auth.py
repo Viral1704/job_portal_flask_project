@@ -22,8 +22,8 @@ def login():
     if user is None or not user.verify_password(password):
         return jsonify({'message' : 'Invalid credentials'}), 401
     
-    access_token = create_access_token(identity = user.id)
-    refresh_token = create_refresh_token(identity = user.id)
+    access_token = create_access_token(identity = str(user.id))
+    refresh_token = create_refresh_token(identity = str(user.id))
 
     return jsonify({
         'access_token' : access_token,
@@ -60,3 +60,13 @@ def register():
     db.session.commit()
 
     return jsonify({'message' : 'User registered successfully', 'user_id' : new_user.id}), 201
+
+
+
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
+@auth_bp.route('/me', methods = ['GET'])
+@jwt_required()
+def get_current_user():
+    user_id = get_jwt_identity()
+    return jsonify({'loggend_in_user_id' : user_id}), 200

@@ -5,6 +5,7 @@ from .extensions import db, jwt, migrate
 from .config import Config
 
 from app.routes.auth import auth_bp
+from app.routes.jobs import job_bp
 
 def create_app():
 
@@ -19,6 +20,7 @@ def create_app():
     jwt.init_app(app)
 
     app.register_blueprint(auth_bp, url_prefix = '/auth')
+    app.register_blueprint(job_bp)
 
     from app.models.user import User
     from app.models.job import Job

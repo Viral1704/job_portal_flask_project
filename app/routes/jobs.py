@@ -67,3 +67,36 @@ def create_job():
     db.session.commit()
 
     return jsonify({'message' : 'Job created successfully!'}), 201
+
+
+
+@job_bp.route('/jobs/me', methods=['GET'])
+@jwt_required()
+def get_my_jobs():
+    user_id = get_jwt_identity()
+
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'message': 'User not found!'}), 404
+    
+    if user.role != 'recruiter':
+        return jsonify({"message": "Unauthorized"}), 403
+    
+    jobs = Job.query.filter_by(recruiter_id= user.id).all()
+
+    jobs_data = []
+    for job in jobs:
+        jobs_data.append({
+            'id' : job.id,
+            'title' : job.title,
+            'description' : job.description,
+            'company' : job.company,
+            'location' : job.location,
+            'salary_min' : job.salary_min,
+            'salary_max' : job.salary_max,
+            'experience_level' : job.experience_level,
+            'status' : job.status
+        })
+
+    return jsonify({'jobs' : jobs_data}), 200

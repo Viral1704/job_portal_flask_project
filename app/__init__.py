@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 
 from .extensions import db, jwt, migrate
 
@@ -28,7 +28,20 @@ def create_app():
     from app.models.job import Job
     from app.models.application import Application
 
+    @app.errorhandler(PermissionError)
+    def handle_permission_error(e):
+        return jsonify({'error' : str(e)}), 403
+    
+
+    @app.errorhandler(LookupError)
+    def handle_lookup_error(e):
+        return jsonify({'error' : str(e)}), 404
+    
+
+    @app.errorhandler(ValueError)
+    def handle_value_error(e):
+        return jsonify({'error' : str(e)}), 400
+    
+    
+
     return app
-
-
-

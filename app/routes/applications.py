@@ -1,29 +1,24 @@
 from flask import Blueprint, request, jsonify
 
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 
 from app.extensions import db
 from app.models.user import User
 from app.models.application import Application
 from app.models.job import Job
 
+from app.utils.auth import get_current_user, require_role
+
 application_bp = Blueprint('application', __name__)
 
 
 @application_bp.route('/applications', methods=['POST'])
 @jwt_required()
-def apply():
+def apply_to_job():
 
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+    user = get_current_user()
+    require_role(user, "applicant")
     
-    if user.role != 'applicant':
-        return jsonify({'error': 'Only applicants can apply for jobs'}), 403
-    
-
     data = request.get_json() or {}
 
     job_id = data.get('job_id')
@@ -53,15 +48,9 @@ def apply():
 @application_bp.route('/applications/me', methods = ['GET'])
 @jwt_required()
 def get_my_applications():
-    user_id = get_jwt_identity()
-
-    user = User.query.get(user_id)
-
-    if not user:
-        return jsonify({'error' : 'User not found!'}), 404
-
-    if user.role != 'applicant':
-        return jsonify({'message' : 'Only applicant can access this endpoint!'}), 403
+    
+    user = get_current_user()
+    require_role(user, "applicant")
     
     applications = user.applications.all()
 
@@ -74,7 +63,7 @@ def get_my_applications():
             'job_description' : job.description,
             'job_location' : job.location,
             'job_status' : job.status,
-            'job_crrated_at' : job.created_at.isoformat(),
+            'job_created_at' : job.created_at.isoformat(),
             'application_status' : application.status,
             'applied_at' : application.created_at.isoformat()
         })

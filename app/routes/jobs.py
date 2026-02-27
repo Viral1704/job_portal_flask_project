@@ -8,6 +8,8 @@ from app.models.user import User
 from app.models.job import Job
 from app.models.application import Application
 
+from app.utils.auth import get_current_user, require_role
+
 
 job_bp = Blueprint('job', __name__)
 
@@ -15,15 +17,9 @@ job_bp = Blueprint('job', __name__)
 @job_bp.route('/jobs', methods = ['POST'])
 @jwt_required()
 def create_job():
-    user_id = get_jwt_identity()
 
-    user = User.query.get(user_id)
-    
-    if not user:
-        return jsonify({'message' : 'User not found!'}), 404
-    
-    if user.role != 'recruiter':
-        return jsonify({"message": "Unauthorized"}), 403
+    user = get_current_user()
+    require_role(user, "recruiter")
     
     data = request.get_json() or {}
     title = data.get('title')
@@ -74,15 +70,9 @@ def create_job():
 @job_bp.route('/jobs/me', methods=['GET'])
 @jwt_required()
 def get_my_jobs():
-    user_id = get_jwt_identity()
-
-    user = User.query.get(user_id)
-
-    if not user:
-        return jsonify({'message': 'User not found!'}), 404
     
-    if user.role != 'recruiter':
-        return jsonify({"message": "Unauthorized"}), 403
+    user = get_current_user()
+    require_role(user, "recruiter")
     
     jobs = Job.query.filter_by(recruiter_id= user.id).all()
 
@@ -108,14 +98,8 @@ def get_my_jobs():
 @jwt_required()
 def recruiter_get_users_applied_for_job(job_id):
 
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-
-    if not user:
-        return jsonify({'error' : "User not found!"}), 404
-    
-    if user.role != 'recruiter':
-        return jsonify({'error' : "This user not access to fetch the data!"}), 403
+    user = get_current_user()
+    require_role(user, "recruiter")
     
     job = Job.query.get(job_id)
 

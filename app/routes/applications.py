@@ -47,3 +47,36 @@ def apply():
     db.session.commit()
 
     return jsonify({'message': 'Application submitted successfully'}), 201
+
+
+
+@application_bp.route('/applications/me', methods = ['GET'])
+@jwt_required()
+def get_my_applications():
+    user_id = get_jwt_identity()
+
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'error' : 'User not found!'}), 404
+
+    if user.role != 'applicant':
+        return jsonify({'message' : 'Only applicant can access this endpoint!'}), 403
+    
+    applications = user.applications.all()
+
+    application_data = []
+
+    for application in applications:
+        job = application.job
+        application_data.append({
+            'job_title' : job.title,
+            'job_description' : job.description,
+            'job_location' : job.location,
+            'job_status' : job.status,
+            'job_crrated_at' : job.created_at.isoformat(),
+            'application_status' : application.status,
+            'applied_at' : application.created_at.isoformat()
+        })
+
+    return jsonify({'applications' : application_data}), 200

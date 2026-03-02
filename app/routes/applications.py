@@ -7,6 +7,8 @@ from app.models.user import User
 from app.models.application import Application
 from app.models.job import Job
 
+from app.services.application_service import apply_to_job
+
 from app.utils.auth import get_current_user, require_role
 
 application_bp = Blueprint('application', __name__)
@@ -14,7 +16,7 @@ application_bp = Blueprint('application', __name__)
 
 @application_bp.route('/applications', methods=['POST'])
 @jwt_required()
-def apply_to_job():
+def apply():
 
     user = get_current_user()
     require_role(user, "applicant")
@@ -25,23 +27,14 @@ def apply_to_job():
     if not job_id:
         return jsonify({'error': 'Job ID is required'}), 400
     
-    job = Job.query.get(job_id)
-    if not job:
-        return jsonify({'error': 'Job not found'}), 404
-    
-    if job.status != 'open':
-        return jsonify({'error': 'Job is not open for applications'}), 400
-    
-    existing_application = Application.query.filter_by(candidate_id = user.id, job_id = job.id).first()
-    if existing_application:
-        return jsonify({'error': 'You have already applied for this job'}), 400
-    
-    application = Application(candidate_id = user.id, job_id = job.id, status = 'applied')
+    try:
+        application = apply_to_job(user, job_id)
+    except LookupError as e:
+        return jsonify({"error": str(e)}), 404
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
-    db.session.add(application)
-    db.session.commit()
-
-    return jsonify({'message': 'Application submitted successfully'}), 201
+    return jsonify({'message': 'Application submitted successfully', 'application_id' : application.id}), 201
 
 
 

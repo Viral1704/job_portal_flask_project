@@ -30,3 +30,29 @@ def apply_to_job(user, job_id):
     db.session.commit()   
     
     return application
+
+
+
+
+
+def update_application_status(user, application_id, new_status):
+    
+    application = Application.query.get(application_id)
+
+    if not application:
+        raise LookupError('Application not found!')
+    
+    if application.job.recruiter_id != user.id:
+        raise PermissionError('You do not have permission!')
+    
+    if application.status != 'pending':
+        raise ValueError('Status must be pending!')
+    
+    if new_status not in ['accepted', 'rejected']:
+        raise ValueError('Invalid status value!')
+    
+    application.status = new_status
+
+    db.session.commit()
+
+    return application

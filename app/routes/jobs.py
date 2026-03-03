@@ -1,12 +1,10 @@
 from flask import Blueprint, jsonify, request
 
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 
 from app.extensions import db
 
-from app.models.user import User
 from app.models.job import Job
-from app.models.application import Application
 
 from app.utils.auth import get_current_user, require_role
 
@@ -73,8 +71,17 @@ def get_my_jobs():
     
     user = get_current_user()
     require_role(user, "recruiter")
+
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
-    jobs = Job.query.filter_by(recruiter_id= user.id).all()
+    pagination = Job.query.filter_by(recruiter_id= user.id).paginate(
+        page=page,
+        per_page=min(per_page, 50),
+        error_out=False
+    )
+
+    jobs = pagination.items
 
     jobs_data = []
     for job in jobs:
@@ -90,7 +97,15 @@ def get_my_jobs():
             'status' : job.status
         })
 
-    return jsonify({'jobs' : jobs_data}), 200
+    return jsonify({
+        'jobs' : jobs_data,
+        'page': pagination.page,
+        'per_page': pagination.per_page,
+        'total_items': pagination.total,
+        'total_pages': pagination.pages,
+        'has_next': pagination.has_next,
+        'has_prev': pagination.has_prev
+    }), 200
 
 
 

@@ -42,6 +42,8 @@ def create_app():
     def handle_value_error(e):
         return jsonify({'error' : str(e)}), 400
     
-    
+    @app.route("/")
+    def home():
+        return {"message": "Job Portal API is running"}
 
     return app

@@ -6,9 +6,14 @@ class Config:
 
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
-    # SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///job_portal.db') # this is sqlite database
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') # this is postgresql database
-    
+    DATABASE_URL = os.getenv('DATABASE_URL')
+
+    # Render give database url start with postgres but for sqlalchemy we need postgresql.
+    if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+
     DEBUG = os.getenv('DEBUG', 'False') == 'True'

@@ -6,6 +6,8 @@ from app.services.application_service import apply_to_job, update_application_st
 
 from app.utils.auth import get_current_user, require_role
 
+from app.models.application import Application
+
 application_bp = Blueprint('application', __name__)
 
 
@@ -39,8 +41,27 @@ def get_my_applications():
     
     user = get_current_user()
     require_role(user, "applicant")
-    
-    applications = user.applications.all()
+
+    status = request.args.get('status')
+
+    if status and status not in ['pending', 'accepted', 'rejected']:
+        return jsonify({"error": "Invalid status value"}), 400
+
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    query = Application.query.filter_by(candidate_id=user.id)
+
+    if status:
+        query = query.filter_by(status=status)
+
+    pagination = query.paginate(
+        page=page,
+        per_page=min(per_page, 50),
+        error_out=False
+    )
+
+    applications = pagination.items
 
     application_data = []
 
@@ -56,7 +77,15 @@ def get_my_applications():
             'applied_at' : application.created_at.isoformat()
         })
 
-    return jsonify({'applications' : application_data}), 200
+    return jsonify({
+        'applications' : application_data,
+        'page': pagination.page,
+        'per_page': pagination.per_page,
+        'total_items': pagination.total,
+        'total_pages': pagination.pages,
+        'has_next': pagination.has_next,
+        'has_prev': pagination.has_prev
+        }), 200
 
 
 

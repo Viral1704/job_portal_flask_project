@@ -1,8 +1,8 @@
-"""initial schema.
+"""Initial Schema.
 
-Revision ID: c71c48a8fa36
+Revision ID: c9cc1814ffa2
 Revises: 
-Create Date: 2026-02-07 19:28:58.309937
+Create Date: 2026-03-03 13:08:10.171302
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c71c48a8fa36'
+revision = 'c9cc1814ffa2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -58,6 +58,7 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_jobs_experience_level'), ['experience_level'], unique=False)
         batch_op.create_index(batch_op.f('ix_jobs_job_type'), ['job_type'], unique=False)
         batch_op.create_index(batch_op.f('ix_jobs_location'), ['location'], unique=False)
+        batch_op.create_index(batch_op.f('ix_jobs_recruiter_id'), ['recruiter_id'], unique=False)
         batch_op.create_index(batch_op.f('ix_jobs_status'), ['status'], unique=False)
         batch_op.create_index(batch_op.f('ix_jobs_title'), ['title'], unique=False)
 
@@ -92,6 +93,7 @@ def downgrade():
     with op.batch_alter_table('jobs', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_jobs_title'))
         batch_op.drop_index(batch_op.f('ix_jobs_status'))
+        batch_op.drop_index(batch_op.f('ix_jobs_recruiter_id'))
         batch_op.drop_index(batch_op.f('ix_jobs_location'))
         batch_op.drop_index(batch_op.f('ix_jobs_job_type'))
         batch_op.drop_index(batch_op.f('ix_jobs_experience_level'))

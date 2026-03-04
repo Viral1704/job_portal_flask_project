@@ -1,0 +1,18 @@
+# python
+__pycache__/
+*.pyc
+
+# virtual environment
+venv/
+
+# environment variables
+.env
+
+# vscode
+.vscode/
+
+# database
+*.db
+
+# migrations cache
+*.sqlite
